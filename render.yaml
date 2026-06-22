@@ -1,0 +1,15 @@
+# Render.com Blueprint — one-click deploy of the price-monitoring website.
+# In Render: New + > Blueprint, connect this repo, and it reads this file.
+services:
+  - type: web
+    name: noknok-price-monitor
+    runtime: python
+    plan: free
+    buildCommand: pip install -r requirements.txt
+    startCommand: python run.py serve
+    healthCheckPath: /healthz
+    envVars:
+      - key: PYTHON_VERSION
+        value: "3.12.4"
+      - key: PRICEMON_INTERVAL_MIN
+        value: "30"

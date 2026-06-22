@@ -1,0 +1,77 @@
+# =====================================================================
+# Competitor configuration for the NokNok price-monitoring system.
+# Each entry maps to a scraper `mode` in src/pricemon/scrapers/.
+#
+# Modes:
+#   magento    -> server-rendered Magento product grids (real scrape)  [WORKS: Spinneys]
+#   manual_csv -> prices loaded from a maintained CSV (app-only stores) [NokNok]
+#   http       -> generic config-driven HTML scrape
+#
+# Status of Lebanese sites investigated (June 2026):
+#   Spinneys   spinneyslebanon.com  -> Magento, server-rendered. SCRAPABLE ✓
+#   NokNok     noknok.co            -> marketing site only; catalog behind
+#                                       app API gateway. Use manual_csv.
+#   Carrefour  carrefourlebanon.com -> Akamai bot protection (HTTP 403). Needs
+#                                       headless browser / API capture. (disabled)
+#   Aoun       lecharcutier.com     -> JS-rendered SPA. Needs Playwright. (disabled)
+#   Toters     totersapp.com        -> app-based, no public web catalog. (disabled)
+# =====================================================================
+
+base_store:
+  key: noknok
+  name: NokNok
+  mode: manual_csv
+  base_url: "https://noknok.co"
+  currency: USD
+  selectors:
+    csv_path: "data/noknok_prices.csv"
+
+competitors:
+  - key: spinneys
+    name: Spinneys Lebanon
+    enabled: true
+    mode: magento
+    base_url: "https://www.spinneyslebanon.com"
+    currency: USD
+    selectors:
+      max_pages: 3
+      categories:
+        - beverages
+        - snacks-candy
+        - food-cupboards
+        - deli-dairy-eggs
+        - cleaning-household
+        - frozen
+        - bakery
+        - fruits-vegetables
+
+  - key: carrefour
+    name: Carrefour Lebanon
+    enabled: false   # Akamai bot protection (403). Needs browser/API capture.
+    mode: http
+    base_url: "https://www.carrefourlebanon.com"
+    currency: USD
+    selectors:
+      product_card: "[data-testid='product_card']"
+      name: "[data-testid='product_name']"
+      price: "[data-testid='product_price']"
+
+  - key: aoun
+    name: Le Charcutier Aoun
+    enabled: false   # JS-rendered SPA. Needs Playwright (mode: browser).
+    mode: http
+    base_url: "https://www.lecharcutier.com"
+    currency: USD
+
+  - key: toters
+    name: Toters
+    enabled: false   # App-based, no public web catalog.
+    mode: http
+    base_url: "https://www.totersapp.com"
+    currency: USD
+
+# Default categories (used by stores that don't define their own list).
+categories:
+  - beverages
+  - snacks-candy
+  - cleaning-household

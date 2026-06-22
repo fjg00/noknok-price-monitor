@@ -1,0 +1,13 @@
+external_id,name,brand,size,category,price,currency,in_stock,url
+nk-0001,Spinneys Mineral Water 1.5L,Spinneys,1.5L,beverages,1.95,USD,1,
+nk-0002,Barebells Protein Milkshake Vanilla 330ml,Barebells,330ml,beverages,4.75,USD,1,
+nk-0003,Barebells Protein Milkshake Chocolate 330ml,Barebells,330ml,beverages,4.75,USD,1,
+nk-0004,Bjorg Almond Milk Vanilla 1L,Bjorg,1L,beverages,4.90,USD,1,
+nk-0005,Coca-Cola Can 330ml,Coca-Cola,330ml,beverages,0.70,USD,1,
+nk-0006,Almaza Beer Bottle 330ml,Almaza,330ml,beverages,1.80,USD,1,
+nk-0007,Master Potato Chips Salted 150g,Master,150g,snacks-candy,1.25,USD,1,
+nk-0008,Galaxy Milk Chocolate Bar 80g,Galaxy,80g,snacks-candy,1.05,USD,1,
+nk-0009,Castania Salted Peanuts 300g,Castania,300g,snacks-candy,3.40,USD,1,
+nk-0010,Fairy Dish Soap Lemon 500ml,Fairy,500ml,cleaning-household,2.15,USD,1,
+nk-0011,Ariel Laundry Detergent 2.5kg,Ariel,2.5kg,cleaning-household,8.10,USD,1,
+nk-0012,Sanita Toilet Paper 12 Rolls,Sanita,12pcs,cleaning-household,5.25,USD,1,

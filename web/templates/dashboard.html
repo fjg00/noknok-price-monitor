@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>NokNok Price Monitor</title>
+  <style>
+    :root {
+      --bg: #0f1115; --panel: #181b22; --line: #262a33;
+      --text: #e7e9ee; --muted: #9aa3b2; --accent: #ffd400;
+      --cheaper: #ff5d5d; --pricier: #2ecc71;
+    }
+    * { box-sizing: border-box; }
+    body { margin: 0; font-family: system-ui, "Segoe UI", sans-serif;
+           background: var(--bg); color: var(--text); }
+    header { padding: 16px 28px; border-bottom: 1px solid var(--line);
+             display: flex; align-items: center; gap: 14px; flex-wrap: wrap; }
+    header h1 { font-size: 18px; margin: 0; }
+    .dot { width: 9px; height: 9px; border-radius: 50%; background: var(--pricier);
+           box-shadow: 0 0 8px var(--pricier); }
+    .dot.scraping { background: var(--accent); box-shadow: 0 0 8px var(--accent);
+                    animation: pulse 1s infinite; }
+    @keyframes pulse { 0%,100% { opacity: 1; } 50% { opacity: .3; } }
+    .meta { color: var(--muted); font-size: 13px; margin-left: auto;
+            display: flex; gap: 18px; align-items: center; flex-wrap: wrap; }
+    .meta b { color: var(--text); }
+    button { background: var(--accent); color: #111; border: 0; cursor: pointer;
+             font-weight: 600; padding: 8px 14px; border-radius: 7px; }
+    button:disabled { opacity: .5; cursor: wait; }
+    .wrap { padding: 18px 28px 60px; }
+    .controls { display: flex; gap: 12px; align-items: center; margin-bottom: 14px;
+                flex-wrap: wrap; }
+    .controls input { background: var(--panel); border: 1px solid var(--line);
+            color: var(--text); padding: 8px 12px; border-radius: 7px; min-width: 220px; }
+    .stats { display: flex; gap: 12px; flex-wrap: wrap; margin-bottom: 16px; }
+    .stat { background: var(--panel); border: 1px solid var(--line);
+            border-radius: 9px; padding: 10px 16px; min-width: 120px; }
+    .stat b { display: block; font-size: 20px; }
+    .stat span { color: var(--muted); font-size: 12px; }
+    table { width: 100%; border-collapse: collapse; font-size: 14px; }
+    th, td { text-align: left; padding: 10px 12px; border-bottom: 1px solid var(--line);
+             vertical-align: top; }
+    th { color: var(--muted); font-weight: 600; font-size: 12px;
+         text-transform: uppercase; letter-spacing: .04em; position: sticky; top: 0;
+         background: var(--bg); }
+    tr:hover td { background: #1c2029; }
+    .prod b { display: block; }
+    .prod span { color: var(--muted); font-size: 12px; }
+    .nk { font-weight: 700; color: var(--accent); white-space: nowrap; }
+    .cheaper { color: var(--cheaper); }
+    .pricier { color: var(--pricier); }
+    .pill { font-size: 11px; padding: 2px 7px; border-radius: 20px;
+            background: #222733; color: var(--muted); margin-left: 4px; }
+    .badge { font-size: 11px; padding: 2px 8px; border-radius: 20px; white-space: nowrap; }
+    .badge-win { background: rgba(46,204,113,.15); color: var(--pricier); }
+    .badge-lose { background: rgba(255,93,93,.15); color: var(--cheaper); }
+    .oos { color: var(--muted); text-decoration: line-through; }
+    .empty { color: var(--muted); padding: 50px; text-align: center; }
+    .flash { animation: flash 1.2s ease-out; }
+    @keyframes flash { from { background: rgba(255,212,0,.18); } to { background: transparent; } }
+  </style>
+</head>
+<body>
+  <header>
+    <span class="dot" id="liveDot"></span>
+    <h1>NokNok Price Monitor</h1>
+    <div class="meta">
+      <span id="stateLabel">live</span>
+      <span>updated <b id="lastUpdated">—</b></span>
+      <span>next scrape <b id="nextScrape">—</b></span>
+      <button id="refreshBtn" onclick="scrapeNow()">Scrape now</button>
+    </div>
+  </header>
+
+  <div class="wrap">
+    <div class="controls">
+      <input id="filter" placeholder="Filter products…" oninput="render()" />
+      <label style="color:var(--muted);font-size:13px;">
+        <input type="checkbox" id="onlyBeaten" onchange="render()" />
+        only where a competitor is cheaper
+      </label>
+    </div>
+
+    <div class="stats" id="stats"></div>
+
+    <table>
+      <thead>
+        <tr>
+          <th>Product</th><th>NokNok</th>
+          <th>Competitors (vs NokNok)</th><th>Position</th>
+        </tr>
+      </thead>
+      <tbody id="rows"></tbody>
+    </table>
+    <div class="empty" id="emptyState" style="display:none">
+      No data yet — the first scrape is running. Prices will appear here automatically.
+    </div>
+  </div>
+
+  <script>
+    let DATA = [];
+    let lastFinished = null;
+
+    const esc = s => (s ?? "").toString().replace(/[&<>"]/g,
+      c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+    const money = v => v == null ? "—" : v.toFixed(2);
+
+    async function loadData(flash=false) {
+      const r = await fetch("/api/comparison");
+      DATA = await r.json();
+      const s = await (await fetch("/api/stats")).json();
+      renderStats(s);
+      render(flash);
+    }
+
+    function renderStats(stats) {
+      document.getElementById("stats").innerHTML = stats.map(s =>
+        `<div class="stat"><b>${s.products}</b><span>${esc(s.name)}${s.is_base?" (base)":""}</span></div>`
+      ).join("");
+    }
+
+    function render(flash=false) {
+      const q = document.getElementById("filter").value.toLowerCase();
+      const onlyBeaten = document.getElementById("onlyBeaten").checked;
+      const tbody = document.getElementById("rows");
+      let rows = DATA.filter(r => r.product.toLowerCase().includes(q));
+      if (onlyBeaten) rows = rows.filter(r => r.noknok_is_cheapest === false);
+
+      document.getElementById("emptyState").style.display = DATA.length ? "none" : "block";
+
+      tbody.innerHTML = rows.map(r => {
+        const comps = (r.competitors||[]).map(c => `
+          <span class="${c.cheaper_than_noknok?'cheaper':'pricier'}">
+            ${esc(c.store)}: <span class="${c.in_stock?'':'oos'}">${money(c.price)}</span>
+            (${c.diff>=0?'+':''}${c.pct}%)</span><span class="pill">match ${c.score}</span>`
+        ).join(" &nbsp; ") || `<span style="color:var(--muted)">no match found yet</span>`;
+
+        let pos;
+        if (r.noknok_is_cheapest === null) pos = `<span class="badge">—</span>`;
+        else if (r.noknok_is_cheapest) pos = `<span class="badge badge-win">cheapest ✓</span>`;
+        else pos = `<span class="badge badge-lose">beaten · min ${money(r.min_competitor)}</span>`;
+
+        return `<tr class="${flash?'flash':''}">
+          <td class="prod"><b>${esc(r.product)}</b><span>${esc(r.brand||'')}${r.category?' · '+esc(r.category):''}</span></td>
+          <td class="nk">${esc(r.currency)} ${money(r.noknok_price)}</td>
+          <td>${comps}</td><td>${pos}</td></tr>`;
+      }).join("");
+    }
+
+    function fmtTime(iso) {
+      if (!iso) return "—";
+      return new Date(iso).toLocaleTimeString([], {hour:'2-digit', minute:'2-digit', second:'2-digit'});
+    }
+
+    async function pollStatus() {
+      try {
+        const st = await (await fetch("/api/status")).json();
+        const scraping = st.state === "scraping";
+        document.getElementById("liveDot").className = "dot" + (scraping?" scraping":"");
+        document.getElementById("stateLabel").textContent =
+          scraping ? "scraping…" : (st.last_error ? "error" : "live");
+        document.getElementById("lastUpdated").textContent = fmtTime(st.last_finished);
+
+        // Countdown to next scrape = last_finished + interval.
+        if (st.last_finished) {
+          const next = new Date(st.last_finished).getTime() + st.interval_min*60000;
+          const secs = Math.max(0, Math.round((next - Date.now())/1000));
+          const m = Math.floor(secs/60), s = secs%60;
+          document.getElementById("nextScrape").textContent = `${m}m ${String(s).padStart(2,'0')}s`;
+        }
+
+        // When a scrape just finished, pull fresh data and flash the table.
+        if (st.last_finished && st.last_finished !== lastFinished) {
+          const first = lastFinished === null;
+          lastFinished = st.last_finished;
+          await loadData(!first);
+        }
+        const btn = document.getElementById("refreshBtn");
+        btn.disabled = scraping;
+        btn.textContent = scraping ? "Scraping…" : "Scrape now";
+      } catch (e) { /* keep polling */ }
+    }
+
+    async function scrapeNow() {
+      const btn = document.getElementById("refreshBtn");
+      btn.disabled = true; btn.textContent = "Scraping…";
+      await fetch("/api/refresh", { method: "POST" });
+      pollStatus();
+    }
+
+    loadData();                 // initial paint
+    pollStatus();
+    setInterval(pollStatus, 3000);  // live status + auto data refresh
+  </script>
+</body>
+</html>

@@ -1,0 +1,9 @@
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+# Ignore the generated database, but keep data/ (it holds noknok_prices.csv).
+data/*.db
+*.db
+.env
+.DS_Store
