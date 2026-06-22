@@ -4,6 +4,15 @@ Monitors competitor grocery prices via **real web scraping**, fuzzy-matches them
 to NokNok products, stores price history, and surfaces it on a live,
 auto-refreshing dashboard.
 
+Repo: https://github.com/fjg00/noknok-price-monitor
+
+### Deploy your live website (one click)
+
+[![Deploy to Render](https://render.com/images/deploy-to-render-button.svg)](https://render.com/deploy?repo=https://github.com/fjg00/noknok-price-monitor)
+
+Click the button → log in to Render with GitHub → **Apply**. You get a public URL
+that scrapes on its own every 30 min. Full walkthrough in [DEPLOY.md](DEPLOY.md).
+
 ## Real-source status (investigated June 2026)
 
 | Store | Domain | Source | Status |

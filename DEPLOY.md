@@ -7,33 +7,29 @@ own, and the dashboard live-updates in the browser. You just need to host it.
 These steps put it online for free on **Render**. (Railway/Fly.io work the same
 way — the `Procfile` and `render.yaml` are already included.)
 
-## 1. Put the code on GitHub
+## 1. The code is already on GitHub ✅
 
-From this folder:
+Private repo, already pushed:
+**https://github.com/fjg00/noknok-price-monitor** (default branch `master`).
 
-```powershell
-git init
-git add .
-git commit -m "NokNok price monitor"
-```
+Nothing to do here unless you want to push later updates (see "Updating" below).
 
-Create an empty repo at https://github.com/new (e.g. `noknok-price-monitor`), then:
+## 2. Deploy on Render (the only step that needs you)
 
-```powershell
-git remote add origin https://github.com/<your-username>/noknok-price-monitor.git
-git branch -M main
-git push -u origin main
-```
+Easiest — use the button in the [README](README.md#deploy-your-live-website-one-click),
+or do it manually:
 
-## 2. Deploy on Render
-
-1. Sign up at https://render.com (free, GitHub login is easiest).
+1. Sign up / log in at https://render.com using your **GitHub (fjg00)** account so
+   Render can see the private repo.
 2. Click **New +  ->  Blueprint**.
-3. Select your `noknok-price-monitor` repo. Render reads [`render.yaml`](render.yaml)
-   and configures everything (build, start command, Python version, 30-min interval).
+3. Select the `noknok-price-monitor` repo. Render reads [`render.yaml`](render.yaml)
+   and configures everything (build, start command, Python 3.12, 30-min interval).
 4. Click **Apply**. First build takes a few minutes.
 5. You get a public URL like `https://noknok-price-monitor.onrender.com` — that's
    your live dashboard. Open it; the first scrape runs automatically on boot.
+
+> Render needs you to authorize it against your GitHub account once — that's an
+> account login only you can do, which is why this last step can't be automated.
 
 ## 3. (Recommended) Keep it awake 24/7
 
@@ -60,7 +56,7 @@ also pauses the 30-minute scraper. Two options:
 
 ## Updating
 
-Push to `main` and Render auto-redeploys:
+Push to `master` and Render auto-redeploys:
 
 ```powershell
 git add . ; git commit -m "update" ; git push
