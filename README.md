@@ -19,9 +19,27 @@ that scrapes on its own every 30 min. Full walkthrough in [DEPLOY.md](DEPLOY.md)
 |---|---|---|---|
 | **NokNok** (base) | noknok.co | `manual_csv` | ⚠️ App-only — no web catalog (see below) |
 | **Spinneys** | spinneyslebanon.com | `magento` | ✅ **Live scraping, ~1,400 products** |
-| Carrefour | carrefourlebanon.com | `http` | ❌ Akamai bot-block (403) — needs browser/API capture |
-| Aoun (Le Charcutier) | lecharcutier.com | `http` | ❌ JS-rendered SPA — needs Playwright |
+| **Carrefour** | carrefourlebanon.com | `carrefour` | 🔑 Akamai-blocked — works with a web-unblocker key |
+| **Aoun** (Le Charcutier) | lecharcutier.com | `aoun` | 🔑 Prices login-gated — works with an account |
 | Toters | totersapp.com | — | ❌ App-only, no public web catalog |
+
+### Enabling Carrefour & Aoun
+
+Both are built and enabled; each just needs one credential (see [`.env.example`](.env.example)):
+
+- **Carrefour** — protected by Akamai Bot Manager (every automated client gets
+  403). Set `SCRAPER_API_KEY` (ZenRows/ScraperAPI, free trial); the scraper fetches
+  the JS-rendered category pages through it and parses the product grid. Then put
+  real category URLs in `carrefour.selectors.category_urls`. Test:
+  `python run.py test carrefour`.
+- **Aoun** — renders fine in a browser but only shows prices to logged-in users.
+  Set `AOUN_USERNAME` / `AOUN_PASSWORD` (a real lecharcutier.com account); the
+  scraper logs in with headless Chromium, reads LBP prices, and converts to USD via
+  `aoun.selectors.lbp_per_usd`. Needs Playwright (`pip install playwright &&
+  python -m playwright install chromium`). Test: `python run.py test aoun`.
+
+Until you add the credential, each is skipped with a clear message — the rest of
+the system keeps running.
 
 **Why NokNok uses a CSV:** `noknok.co` is a marketing site; the real catalog lives
 behind the mobile app's API gateway (`api.noknok.co`, an Ocelot gateway not publicly

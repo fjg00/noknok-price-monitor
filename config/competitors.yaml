@@ -47,21 +47,38 @@ competitors:
 
   - key: carrefour
     name: Carrefour Lebanon
-    enabled: false   # Akamai bot protection (403). Needs browser/API capture.
-    mode: http
+    # Akamai-protected. Needs a web-unblocking key: set env SCRAPER_API_KEY
+    # (and SCRAPER_PROVIDER=zenrows|scraperapi). Then fill category_urls with
+    # real category pages copied from the site menu. Test: python run.py test carrefour
+    enabled: true
+    mode: carrefour
     base_url: "https://www.carrefourlebanon.com"
     currency: USD
     selectors:
+      # Copy real category listing URLs from carrefourlebanon.com into this list.
+      category_urls:
+        - "https://www.carrefourlebanon.com/maflbn/en/c/NFLOOD0210000"   # Beverages (verify)
+        - "https://www.carrefourlebanon.com/maflbn/en/c/NFLOOD0200000"   # Snacks (verify)
+      # MAF data-testid selectors (defaults live in carrefour.py; override here if needed):
       product_card: "[data-testid='product_card']"
       name: "[data-testid='product_name']"
       price: "[data-testid='product_price']"
 
   - key: aoun
     name: Le Charcutier Aoun
-    enabled: false   # JS-rendered SPA. Needs Playwright (mode: browser).
-    mode: http
+    # Prices are login-gated. Set env AOUN_USERNAME / AOUN_PASSWORD (a real
+    # lecharcutier.com account). Test: python run.py test aoun
+    enabled: true
+    mode: aoun
     base_url: "https://www.lecharcutier.com"
     currency: USD
+    selectors:
+      lbp_per_usd: 89500          # update to current market rate
+      categories:
+        - cold-hot-beverages
+        - sweets-snacks
+        - milk-dairy-products-eggs
+        - grocery-foods
 
   - key: toters
     name: Toters

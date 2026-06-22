@@ -34,6 +34,29 @@ def cmd_match():
     print(f"Created/updated {n} matches.")
 
 
+def cmd_test():
+    """Test one store's scraper live and print a sample (no DB writes).
+
+    Usage: python run.py test <store_key>   e.g. python run.py test carrefour
+    """
+    from pricemon.scrapers import build_scraper
+    cfg = load_config()
+    key = sys.argv[2] if len(sys.argv) > 2 else ""
+    store = cfg.store(key)
+    if store is None:
+        print(f"Unknown store '{key}'. Options: {[s.key for s in cfg.all_stores]}")
+        return
+    print(f"Testing scraper for {store.name} (mode={store.mode})...")
+    try:
+        items = build_scraper(store).scrape(cfg.categories)
+    except Exception as exc:
+        print(f"\n  FAILED: {exc}")
+        return
+    print(f"\n  Got {len(items)} products. Sample:")
+    for it in items[:10]:
+        print(f"    {it.currency} {it.price:>8.2f}  {it.name[:50]}")
+
+
 def cmd_serve():
     import os
     import uvicorn
@@ -46,9 +69,8 @@ def cmd_serve():
 
 def main():
     cmd = sys.argv[1] if len(sys.argv) > 1 else "serve"
-    {"scrape": cmd_scrape, "match": cmd_match, "serve": cmd_serve}.get(
-        cmd, lambda: print(__doc__)
-    )()
+    {"scrape": cmd_scrape, "match": cmd_match, "serve": cmd_serve,
+     "test": cmd_test}.get(cmd, lambda: print(__doc__))()
 
 
 if __name__ == "__main__":

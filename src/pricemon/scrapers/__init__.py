@@ -2,7 +2,9 @@
 from __future__ import annotations
 
 from ..config import StoreConfig
+from .aoun import AounScraper
 from .base import BaseScraper, ScrapedProduct
+from .carrefour import CarrefourScraper
 from .generic_http import GenericHttpScraper
 from .magento import MagentoScraper
 from .manual_csv import ManualCsvScraper
@@ -14,11 +16,10 @@ MODES: dict[str, type[BaseScraper]] = {
     "http": GenericHttpScraper,    # generic config-driven HTML scrape
 }
 
-# Per-store overrides for sites that need bespoke logic (e.g. JSON API,
-# Playwright). Register here as you implement them.
+# Per-store overrides for sites that need bespoke logic.
 SPECIALIZED: dict[str, type[BaseScraper]] = {
-    # "carrefour": CarrefourApiScraper,
-    # "aoun": LeCharcutierBrowserScraper,
+    "carrefour": CarrefourScraper,  # Akamai -> web-unblocking API + DOM parse
+    "aoun": AounScraper,            # JS + login-gated -> authenticated Playwright
 }
 
 

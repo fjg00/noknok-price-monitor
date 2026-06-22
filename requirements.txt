@@ -9,5 +9,6 @@ SQLAlchemy>=2.0.31
 APScheduler>=3.10
 PyYAML>=6.0
 Jinja2>=3.1.6
-# Optional: only needed for JS-rendered sites (Carrefour/Aoun via mode: browser)
-# playwright>=1.44
+# Needed for the Aoun (Le Charcutier) authenticated browser scraper.
+# After install run once:  python -m playwright install chromium
+playwright>=1.44
